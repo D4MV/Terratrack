@@ -1,0 +1,12 @@
+version: "2.3"
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"  # Cambiado de 3005 a 5433 en el host
+    environment:
+      - DATABASE_HOST=127.0.0.1
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
