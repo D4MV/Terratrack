@@ -1,5 +1,6 @@
-import { auth } from "../../../../auth"
+import { auth } from "../../../auth"
 import LogOutButton from "@/components/logout"
+import { AppSidebar } from "@/components/sideBarMenu"
  
 export default async function DashboardPage() {
   const session = await auth()
@@ -13,7 +14,9 @@ export default async function DashboardPage() {
   return (
     <div className="container">
       <pre>{JSON.stringify(session, null, 2)}</pre>
-      <LogOutButton></LogOutButton>
+      <AppSidebar>
+      </AppSidebar>
+      
     </div>
   )
 }

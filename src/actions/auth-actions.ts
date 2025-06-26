@@ -1,10 +1,14 @@
 "use server";
 
-import { loginSchema } from "@/lib/loginSchema"
+import { loginSchema, RegisterSchema } from "@/lib/loginSchema"
 import { z } from "zod"
-import { signIn } from "../../auth"
+import { signIn } from "../auth"
 import { AuthError } from "next-auth";
-import { success } from "zod/v4-mini";
+import { prisma } from "@/lib/prisma";
+import { error } from "console";
+import bcrypt from "bcryptjs";
+import { _email } from "zod/v4/core";
+
 
 export const loginActions = async(
     values: z.infer<typeof loginSchema>
@@ -23,4 +27,52 @@ export const loginActions = async(
         }
         console.log(error)
     } 
+}
+
+export const RegisterActions = async(
+    values: z.infer<typeof RegisterSchema>
+)=>{    
+    try{
+        const {data, success} = RegisterSchema.safeParse(values);
+        if(!success){
+            return {error:"datos invalidos"}
+        }
+
+        const user = await  prisma.user.findUnique({
+            where:{
+              email:data.email,
+        }
+        });
+
+        const passwordHash = await bcrypt.hash(data.password, 10)
+
+        if(user){
+            return{
+            error
+            }
+        }
+
+        await prisma.user.create({
+            data:{
+                email:data.email,
+                nombre:data.nombre,
+                password: passwordHash
+            }
+        })
+
+        await signIn("credentials", {
+            email:data.email,
+            nombre: data.nombre,
+            redirect:false
+            
+        })
+
+        return {success:true}
+
+    }catch(error){
+        if(error instanceof AuthError){
+            return {error: error.cause?.err?.message};
+        }
+        return {error: "error 505"}
+    }
 }
