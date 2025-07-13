@@ -89,6 +89,7 @@ export const RegisterActions = async(
         if(error instanceof AuthError){
             return {error: error.cause?.err?.message};
         }
-        return {error: "error 505"}
+        console.error("Error en registro:", error);
+        return {error: "Error interno del servidor. Por favor, inténtalo de nuevo."}
     }
 }
