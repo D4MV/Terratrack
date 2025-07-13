@@ -15,17 +15,17 @@ import {
 const items = [
   {
     title: "Dashboard",
-    url: "#",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Mi Terreno",
-    url: "/miTerreno",
+    url: "/agregarTerreno",
     icon: MapPinHouse,
   },
   {
     title: "Clima",
-    url: "#",
+    url: "/clima",
     icon: CloudSunRain,
   },
   {

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Terreno" ALTER COLUMN "areaHectareas" SET DATA TYPE DOUBLE PRECISION;

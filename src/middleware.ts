@@ -6,7 +6,8 @@ const { auth: middleware } = NextAuth(authConfig)
 
 const publicRoutes = [
   "/login",
-  "/register"
+  "/register",
+  "/actions/auth-actions"
 ]
 
 export default middleware((req)=>{

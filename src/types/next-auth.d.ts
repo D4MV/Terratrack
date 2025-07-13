@@ -1,13 +1,15 @@
-import NextAuth, { type DefaultSession } from "next-auth"
+import NextAuth, { type DefaultSession, DefaultUser } from "next-auth"
  
 declare module "next-auth" {
   interface Session {
     user: {
       role?: string
+      fundoId?: string
     } & DefaultSession["user"]
   }
-  interface User {
+  interface User extends DefaultUser {
     role?: string
+    fundoId?: string
   }
 }
 

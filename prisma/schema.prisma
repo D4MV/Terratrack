@@ -51,7 +51,8 @@ model Session {
  
 model User {
   id            String    @id @default(cuid())
-  nombre          String?
+  rutUsuario    String
+  nombre        String?
   email         String?   @unique
   password      String?
   emailVerified DateTime? @map("email_verified")
@@ -59,7 +60,16 @@ model User {
   accounts      Account[]
   sessions      Session[]
   role          Role      @default(user)
- 
+
+  // Relaciones agregadas:
+  fundoId       String
+  fundo         Fundo?    @relation(fields: [fundoId], references: [id])
+  actividades   Actividad[]
+  reportes      Reporte[]
+  tareas        Tarea[]
+  validaciones  ValidacionRegistro[]
+  documentos    DocumentoFactura[]
+
   @@map("users")
 }
  
@@ -70,4 +80,181 @@ model VerificationToken {
  
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model Suelo {
+  id              String          @id @default(cuid())
+  tipo            String
+  caracteristicas String
+
+  planta_suelos   PlantaSuelo[]
+  // Un Suelo puede tener muchos Terrenos.
+  // La clave foránea estará en el modelo Terreno.
+  terrenos        Terreno[]
+}
+
+model Terreno {
+  id              String           @id @default(cuid())
+  areaHectareas   Float
+  lat             Float
+  lon             Float
+  // Renombrado 'fundol' a 'fundoId' para mayor claridad, ya que es una clave foránea
+  fundoId         String
+
+  fundo           Fundo            @relation(fields: [fundoId], references: [id])
+  actividades     Actividad[]
+  alertas         Alerta[]
+  reportes        Reporte[]
+  tareas          Tarea[]
+  documentos      DocumentoFactura[]
+
+  // Relación con Suelo: Un Terreno tiene un solo Suelo.
+  // La clave foránea 'sueloId' reside en Terreno.
+  sueloId         String? // Marcado como opcional si un terreno puede existir sin un suelo asignado inicialmente
+  suelo           Suelo?           @relation(fields: [sueloId], references: [id])
+
+  // Relación Many-to-Many implícita con Planta.
+  // Prisma creará una tabla de unión "_PlantaToTerreno" automáticamente.
+  plantas         Planta[]
+}
+
+
+model Fundo {
+  id              String         @id @default(cuid())
+  nombre          String
+  direccion       String
+  codeSagGrower   String?
+  rutFundo        String
+
+  terrenos        Terreno[]
+  // Un Fundo tiene muchos Users.
+  // La clave foránea 'fundoId' estará en el modelo User.
+  users           User[]
+}
+
+
+model Planta {
+  id                String          @id @default(cuid())
+  nombre            String
+  espacio_ancho     Float
+  espacio_largo     Float
+  produccion        Int
+  frecuencia_riego  String
+  descripcion       String
+
+  planta_productos  PlantaProducto[]
+  planta_suelos     PlantaSuelo[]
+  // Relación Many-to-Many implícita con Terreno.
+  // Prisma creará una tabla de unión "_PlantaToTerreno" automáticamente.
+  terrenos          Terreno[]
+}
+
+model Producto {
+  id                String          @id @default(cuid())
+  nombre            String
+  tipo              String
+  descripcion       String
+
+  planta_productos  PlantaProducto[]
+}
+
+// Tabla de unión explícita para la relación Many-to-Many entre Planta y Producto
+model PlantaProducto {
+  id_planta       String
+  id_producto     String
+  circunstancia   String
+  frecuencia      String
+  cantidad        String
+
+  planta          Planta    @relation(fields: [id_planta], references: [id])
+  producto        Producto  @relation(fields: [id_producto], references: [id])
+
+  @@id([id_planta, id_producto])
+}
+
+// Tabla de unión explícita para la relación Many-to-Many entre Planta y Suelo
+model PlantaSuelo {
+  id_planta          String
+  id_suelo           String
+  notas_suelo_planta String
+
+  planta             Planta  @relation(fields: [id_planta], references: [id])
+  suelo              Suelo   @relation(fields: [id_suelo], references: [id])
+
+  @@id([id_planta, id_suelo])
+}
+
+model Actividad {
+  id            String    @id @default(cuid())
+  tipo          String
+  fecha         DateTime
+  descripcion   String
+  terrenoId     String
+  userId        String // Clave foránea al User
+
+  terreno       Terreno   @relation(fields: [terrenoId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+model Alerta {
+  id            String    @id @default(cuid())
+  tipo          String
+  descripcion   String
+  fecha         DateTime
+  terrenoId     String
+
+  terreno       Terreno   @relation(fields: [terrenoId], references: [id])
+}
+
+model Reporte {
+  id            String    @id @default(cuid())
+  tipo          String
+  periodo       String
+  fecha         DateTime
+  userId        String // Clave foránea al User
+  contenido     String
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  // Un reporte puede o no estar asociado a un terreno.
+  // Se requiere 'terrenoId' como clave foránea.
+  terrenoId     String? // Marcado como opcional si el reporte puede no tener un terreno asociado
+  terreno       Terreno?  @relation(fields: [terrenoId], references: [id])
+}
+
+model Tarea {
+  id            String    @id @default(cuid())
+  descripcion   String
+  tipo          String
+  fecha         DateTime
+  userId        String // Clave foránea al User
+  terrenoId     String
+
+  user          User      @relation(fields: [userId], references: [id])
+  terreno       Terreno   @relation(fields: [terrenoId], references: [id])
+}
+
+model ValidacionRegistro {
+  id                String    @id @default(cuid())
+  registroTipo      String
+  registroId        String
+  estado            String
+  observaciones     String
+  userId            String // Clave foránea al User
+  fechaValidacion   DateTime
+
+  user              User      @relation(fields: [userId], references: [id])
+}
+
+model DocumentoFactura {
+  id            String    @id @default(cuid())
+  nombre        String
+  urlArchivo    String
+  tipo          String
+  fechaSubida   DateTime
+  terrenoId     String
+  userId        String // Clave foránea al User
+
+  terreno       Terreno   @relation(fields: [terrenoId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
 }

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "./ui/input";
 import { RegisterActions } from "@/actions/auth-actions";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter}  from "next/navigation";
 
 const RegisterForm = ()=>{
@@ -28,8 +28,12 @@ const RegisterForm = ()=>{
         resolver: zodResolver(RegisterSchema),
         defaultValues: {
           email: "",
-          password:"",
-          nombre: ""
+          nombre: "",
+          rutUsuario: "",
+          rutFundo: "",
+          nombreTerreno: "",
+          direccion:"",
+          password:""
         },
       })
 
@@ -39,7 +43,7 @@ const RegisterForm = ()=>{
     startTranstion( async() =>{
       const response = await RegisterActions(values);
       if(response?.error){
-        setError(typeof response.error)
+        setError(response.error)
       }else{
         router.push("/dashboard")
       }
@@ -72,6 +76,58 @@ const RegisterForm = ()=>{
                 <FormLabel>nombre</FormLabel>
                 <FormControl>
                     <Input placeholder="nombre" type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="rutUsuario"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>RUT del Usuario</FormLabel>
+                <FormControl>
+                    <Input placeholder="RUT del Usuario" type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="rutFundo"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>RUT del Fundo</FormLabel>
+                <FormControl>
+                    <Input placeholder="RUT del Fundo" type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="nombreTerreno"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Nombre del Terreno</FormLabel>
+                <FormControl>
+                    <Input placeholder="Nombre del Terreno" type="text" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="direccion"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>dirección</FormLabel>
+                <FormControl>
+                    <Input placeholder="dirección" type="text"{...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>

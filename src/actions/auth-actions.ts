@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { error } from "console";
 import bcrypt from "bcryptjs";
 import { _email } from "zod/v4/core";
+import { NextResponse } from "next/server";
 
 
 export const loginActions = async(
@@ -48,17 +49,32 @@ export const RegisterActions = async(
 
         if(user){
             return{
-            error
+                error: "El usuario ya existe"
             }
         }
+
+
+        const crearFundo = await prisma.fundo.create({
+            data:{
+                rutFundo:data.rutFundo,
+                nombre:data.nombreTerreno,
+                direccion:data.direccion
+                
+            }
+        })
 
         await prisma.user.create({
             data:{
                 email:data.email,
                 nombre:data.nombre,
-                password: passwordHash
+                password: passwordHash,
+                rutUsuario: data.rutUsuario,
+                fundoId: crearFundo.id
             }
         })
+
+
+
 
         await signIn("credentials", {
             email:data.email,
